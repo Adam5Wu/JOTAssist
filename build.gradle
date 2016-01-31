@@ -1,0 +1,51 @@
+buildscript {
+	repositories {
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath "gradle.plugin.com.zoltu.gradle.plugin:git-versioning:2.0.1"
+	}
+}
+
+apply plugin: "com.zoltu.git-versioning"
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+compileJava {
+	sourceCompatibility = '1.8'
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir 'src'
+		}
+		resources {
+			srcDir 'res'
+			include '**/*'
+			srcDir 'src'
+			include '**/*.properties'
+		}
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'jline:jline:2.13'
+//	compile 'com.necla.am:ZWUtils-Java:1.0.99'
+}
+
+jar {
+	manifest {
+		attributes 'Main-Class': 'com.necla.am.zwutils.Debugging.JOTAssist'
+	}
+	from {
+		configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+}
