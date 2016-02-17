@@ -27,7 +27,7 @@ sourceSets {
 			srcDir 'res'
 			include '**/*'
 			srcDir 'src'
-			include '**/*.properties'
+			exclude '**/*.java'
 		}
 	}
 }
