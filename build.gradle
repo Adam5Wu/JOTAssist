@@ -38,7 +38,7 @@ repositories {
 
 dependencies {
 	compile 'jline:jline:2.13'
-//	compile 'com.necla.am:ZWUtils-Java:1.0.99'
+//	compile 'com.necla.am:ZWUtils-Java:1.0.+'
 }
 
 jar {
