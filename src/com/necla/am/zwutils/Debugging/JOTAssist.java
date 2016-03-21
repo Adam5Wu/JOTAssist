@@ -75,7 +75,7 @@ public class JOTAssist {
 			CLog.Info("Located base class '%s' (%s)", TapClass.toString(), TapClass.fullName());
 		} else
 			TapClass = DirectSuffixClassSolver.BaseClasses[0];
-			
+		
 		if (pkgname != null) {
 			TapPackage = new SuffixClassDictionary(jarpath, Loader);
 			new PackageClassIterable(JarURL, pkgname, null).forEach(clsname -> {
@@ -353,7 +353,7 @@ public class JOTAssist {
 				case ObjectTrap.SYM_ASTYPE: {
 					if (Desc.C != null || Desc.F != null || Desc.G != null || Desc.T != null)
 						Misc.ERROR("Excessive scope");
-						
+					
 					if (Scope.length() != 2) Misc.ERROR("Invalid type case scope");
 					ObjectTrap.TypeCastScope TS = JOT.new TypeCastScope(Scope.charAt(1));
 					Desc.T = TS.T;
@@ -363,7 +363,7 @@ public class JOTAssist {
 				case ObjectTrap.SYM_ASCLASS: {
 					if (Desc.C != null || Desc.F != null || Desc.G != null || Desc.T != null)
 						Misc.ERROR("Excessive scope");
-						
+					
 					int PartIdx = Scope.indexOf(ObjectTrap.SYM_FIELD);
 					if (PartIdx < 0) PartIdx = Scope.indexOf(ObjectTrap.SYM_GETTER);
 					if (PartIdx < 0) Misc.ERROR("Incomplete scope");
@@ -429,7 +429,7 @@ public class JOTAssist {
 				
 				for (ObjectTrap.CastableTypes T : ObjectTrap.CastableTypes.values())
 					candidates.add(String.format("%c%c", ObjectTrap.SYM_ASTYPE, T.SYMBOL));
-					
+				
 				return -1;
 			});
 			console.addCompleter((buffer, cursor, candidates) -> {
