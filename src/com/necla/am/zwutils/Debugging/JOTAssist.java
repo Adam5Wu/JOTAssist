@@ -472,7 +472,8 @@ public class JOTAssist {
 						if (LineIn.charAt(0) != ObjectTrap.SYM_SCOPEOP)
 							ScopeCascade.add(Assist.GetScopeDesc(LineIn));
 						else {
-							IHook H = ObjectTrap.HookMaker.Create(Assist.CurClass.toClass(), LineIn.substring(1));
+							IHook H = ObjectTrap.HookMaker.Create(Assist.CurClass.toClass(), LineIn.substring(1),
+									Assist.TapPackage);
 							cout.print("Hook operation: ");
 							cout.println(H.toString());
 						}
