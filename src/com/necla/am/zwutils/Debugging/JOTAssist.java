@@ -51,7 +51,8 @@ public class JOTAssist {
 	protected final ObjectTrap JOT;
 	protected IClassSolver CurClass;
 	
-	public JOTAssist(String jarpath, String cname, String pkgname) throws IOException {
+	public JOTAssist(String jarpath, String cname, String pkgname)
+			throws IOException, ClassNotFoundException {
 		URL FileURL = new File(jarpath).toURI().toURL();
 		URL JarURL = new URL("jar", "", FileURL.toString());
 		ClassLoader Loader = new URLClassLoader(Misc.wrap(FileURL));
@@ -72,7 +73,7 @@ public class JOTAssist {
 						break;
 					}
 			}
-			CLog.Info("Located base class '%s' (%s)", TapClass.toString(), TapClass.fullName());
+			CLog.Info("Located base class '%s' (%s)", TapClass.toString(), TapClass.FullName());
 		} else
 			TapClass = DirectSuffixClassSolver.BaseClasses[0];
 		
@@ -146,14 +147,18 @@ public class JOTAssist {
 				
 				if (!CurClass.equals(CacheClass)) {
 					CandiCName.clear();
-					List<Class<?>> DescList = ClassDescMap.get(CurClass.toClass());
-					if (DescList != null) {
-						DescList.forEach(C -> {
-							IClassSolver DictClass = TapPackage.Lookup(C.getName());
-							if (DictClass == null) DictClass = new DirectClassSolver(C);
-							CandiCName.add(DictClass.toString());
-						});
-						CLog.Fine("Loaded %d derivative classes", DescList.size());
+					try {
+						List<Class<?>> DescList = ClassDescMap.get(CurClass.toClass());
+						if (DescList != null) {
+							DescList.forEach(C -> {
+								IClassSolver DictClass = TapPackage.Lookup(C.getName());
+								if (DictClass == null) DictClass = new DirectClassSolver(C);
+								CandiCName.add(DictClass.toString());
+							});
+							CLog.Fine("Loaded %d derivative classes", DescList.size());
+						}
+					} catch (ClassNotFoundException e) {
+						Misc.CascadeThrow(e);
 					}
 					CacheClass = CurClass;
 				}
@@ -202,17 +207,21 @@ public class JOTAssist {
 				if (!WorkingClass.equals(CacheClass)) {
 					CandiFName.clear();
 					List<Class<?>> CandiClass = new ArrayList<>();
-					Class<?> C = WorkingClass.toClass();
-					while (C != null) {
-						CandiClass.add(C);
-						C = C.getSuperclass();
+					try {
+						Class<?> C = WorkingClass.toClass();
+						while (C != null) {
+							CandiClass.add(C);
+							C = C.getSuperclass();
+						}
+						CLog.Fine("Loaded %d super classes", CandiClass.size());
+						CandiClass.forEach(CC -> {
+							for (Field F : CC.getDeclaredFields())
+								CandiFName.add(F.getName());
+						});
+						CLog.Fine("Loaded %d field names", CandiFName.size());
+					} catch (ClassNotFoundException e) {
+						Misc.CascadeThrow(e);
 					}
-					CLog.Fine("Loaded %d super classes", CandiClass.size());
-					CandiClass.forEach(CC -> {
-						for (Field F : CC.getDeclaredFields())
-							CandiFName.add(F.getName());
-					});
-					CLog.Fine("Loaded %d field names", CandiFName.size());
 					CacheClass = WorkingClass;
 				}
 				
@@ -262,22 +271,26 @@ public class JOTAssist {
 				if (!WorkingClass.equals(CacheClass)) {
 					CandiGName.clear();
 					List<Class<?>> CandiClass = new ArrayList<>();
-					Stack<Class<?>> SCS = new Stack<>();
-					Class<?> C = WorkingClass.toClass();
-					while (C != null) {
-						CandiClass.add(C);
-						SCS.addAll(Arrays.asList(C.getInterfaces()));
-						if ((C = C.getSuperclass()) == null) {
-							C = !SCS.isEmpty()? SCS.pop() : null;
+					try {
+						Stack<Class<?>> SCS = new Stack<>();
+						Class<?> C = WorkingClass.toClass();
+						while (C != null) {
+							CandiClass.add(C);
+							SCS.addAll(Arrays.asList(C.getInterfaces()));
+							if ((C = C.getSuperclass()) == null) {
+								C = !SCS.isEmpty()? SCS.pop() : null;
+							}
 						}
+						CLog.Fine("Loaded %d super classes/interfaces", CandiClass.size());
+						for (Class<?> CC : CandiClass) {
+							for (Method M : CC.getDeclaredMethods())
+								if ((M.getParameterTypes().length == 0) && !M.getReturnType().equals(Void.TYPE))
+									CandiGName.add(M.getName());
+						}
+						CLog.Fine("Loaded %d getter names", CandiGName.size());
+					} catch (ClassNotFoundException e) {
+						Misc.CascadeThrow(e);
 					}
-					CLog.Fine("Loaded %d super classes/interfaces", CandiClass.size());
-					for (Class<?> CC : CandiClass) {
-						for (Method M : CC.getDeclaredMethods())
-							if ((M.getParameterTypes().length == 0) && !M.getReturnType().equals(Void.TYPE))
-								CandiGName.add(M.getName());
-					}
-					CLog.Fine("Loaded %d getter names", CandiGName.size());
 					CacheClass = WorkingClass;
 				}
 				
@@ -346,7 +359,7 @@ public class JOTAssist {
 		public ObjectTrap.CastableTypes T = null;
 	}
 	
-	ScopeDesc GetScopeDesc(String Scope) {
+	ScopeDesc GetScopeDesc(String Scope) throws SecurityException, ClassNotFoundException {
 		ScopeDesc Desc = new ScopeDesc();
 		while (Scope != null && !Scope.isEmpty()) {
 			switch (Scope.charAt(0)) {
@@ -440,11 +453,11 @@ public class JOTAssist {
 				if (PartBuf.charAt(0) != ObjectTrap.SYM_SCOPEOP) return -1;
 				if (PartBuf.length() > 2) return -1;
 				
-				Class<?> HC = ObjectTrap.HookMaker.Lookup(Assist.CurClass.toClass());
-				if (HC == null) return -1;
-				
-				String OpBuf = buffer.substring(1);
 				try {
+					Class<?> HC = ObjectTrap.HookMaker.Lookup(Assist.CurClass.toClass());
+					if (HC == null) return -1;
+					
+					String OpBuf = buffer.substring(1);
 					Method HM = HC.getDeclaredMethod("InputHelp");
 					((Collection<String>) HM.invoke(null)).forEach(HH -> {
 						if (HH.startsWith(OpBuf)) candidates.add(ObjectTrap.SYM_SCOPEOP + HH);
