@@ -15,6 +15,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 
 compileJava {
+	options.incremental = true
 	sourceCompatibility = '1.8'
 }
 
