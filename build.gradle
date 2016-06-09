@@ -21,13 +21,10 @@ compileJava {
 sourceSets {
 	main {
 		java {
-			srcDir 'src'
+			srcDirs = [ 'src' ]
 		}
 		resources {
-			srcDir 'res'
-			include '**/*'
-			srcDir 'src'
-			exclude '**/*.java'
+			srcDirs = [ 'res' ]
 		}
 	}
 }
@@ -47,5 +44,7 @@ jar {
 	}
 	from {
 		configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+		exclude "META-INF/**"
+		exclude "CHANGELOG*"
 	}
 }
