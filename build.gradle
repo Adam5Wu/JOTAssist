@@ -43,8 +43,10 @@ jar {
 		attributes 'Main-Class': 'com.necla.am.zwutils.Debugging.JOTAssist'
 	}
 	from {
-		configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-		exclude "META-INF/**"
-		exclude "CHANGELOG*"
+		configurations.compile.collect {
+			it.isDirectory() ? it : zipTree(it).matching {
+				exclude { it.path.contains('META-INF') || it.name == 'CHANGELOG.md' }
+			}
+		}
 	}
 }
