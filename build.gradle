@@ -44,9 +44,7 @@ jar {
 	}
 	from {
 		configurations.compile.collect {
-			it.isDirectory() ? it : zipTree(it).matching {
-				exclude { it.path.contains('META-INF') || it.name == 'CHANGELOG.md' }
-			}
+			it.isDirectory() ? it : zipTree(it)
 		}
 	}
 }
