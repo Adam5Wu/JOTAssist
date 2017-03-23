@@ -58,8 +58,9 @@ public class JOTAssist {
 		ClassLoader Loader = new URLClassLoader(Misc.wrap(FileURL));
 		
 		SuffixClassDictionary ClassDict = new SuffixClassDictionary(jarpath, Loader);
-		for (ISuffixClassSolver csolver : DirectSuffixClassSolver.BaseClasses)
+		for (ISuffixClassSolver csolver : DirectSuffixClassSolver.BaseClasses) {
 			ClassDict.Add(csolver);
+		}
 		new PackageClassIterable(JarURL, "", null).forEach(ClassDict::Add);
 		CLog.Info("Loaded %d classes from Jar", ClassDict.size());
 		
@@ -74,8 +75,9 @@ public class JOTAssist {
 					}
 			}
 			CLog.Info("Located base class '%s' (%s)", TapClass.toString(), TapClass.FullName());
-		} else
+		} else {
 			TapClass = DirectSuffixClassSolver.BaseClasses[0];
+		}
 		
 		if (pkgname != null) {
 			TapPackage = new SuffixClassDictionary(jarpath, Loader);
@@ -113,10 +115,11 @@ public class JOTAssist {
 			SCS.addAll(Arrays.asList(C.getInterfaces()));
 			Class<?> SI = !SCS.isEmpty()? SCS.pop() : null;
 			while (SI != null) {
-				if (C.isInterface())
+				if (C.isInterface()) {
 					CLog.Fine(": extends %s", SI);
-				else
+				} else {
 					CLog.Fine(": implements %s", SI);
+				}
 				List<Class<?>> DescList = ClassDescMap.get(SI);
 				if (DescList == null) {
 					DescList = new ArrayList<>();
@@ -152,7 +155,9 @@ public class JOTAssist {
 						if (DescList != null) {
 							DescList.forEach(C -> {
 								IClassSolver DictClass = TapPackage.Lookup(C.getName());
-								if (DictClass == null) DictClass = new DirectClassSolver(C);
+								if (DictClass == null) {
+									DictClass = new DirectClassSolver(C);
+								}
 								CandiCName.add(DictClass.toString());
 							});
 							CLog.Fine("Loaded %d derivative classes", DescList.size());
@@ -171,7 +176,9 @@ public class JOTAssist {
 					}
 				});
 				if (NewComplete.size() == 1) {
-					if (NewComplete.get(0).equals(PartBuf)) NewComplete.clear();
+					if (NewComplete.get(0).equals(PartBuf)) {
+						NewComplete.clear();
+					}
 				}
 				candidates.addAll(NewComplete);
 				return -1;
@@ -215,8 +222,9 @@ public class JOTAssist {
 						}
 						CLog.Fine("Loaded %d super classes", CandiClass.size());
 						CandiClass.forEach(CC -> {
-							for (Field F : CC.getDeclaredFields())
+							for (Field F : CC.getDeclaredFields()) {
 								CandiFName.add(F.getName());
+							}
 						});
 						CLog.Fine("Loaded %d field names", CandiFName.size());
 					} catch (ClassNotFoundException e) {
@@ -235,7 +243,9 @@ public class JOTAssist {
 					}
 				});
 				if (NewComplete.size() == 1) {
-					if (NewComplete.get(0).equals(PartBuf)) NewComplete.clear();
+					if (NewComplete.get(0).equals(PartBuf)) {
+						NewComplete.clear();
+					}
 				}
 				candidates.addAll(NewComplete);
 				return -1;
@@ -284,8 +294,9 @@ public class JOTAssist {
 						CLog.Fine("Loaded %d super classes/interfaces", CandiClass.size());
 						for (Class<?> CC : CandiClass) {
 							for (Method M : CC.getDeclaredMethods())
-								if ((M.getParameterTypes().length == 0) && !M.getReturnType().equals(Void.TYPE))
+								if ((M.getParameterTypes().length == 0) && !M.getReturnType().equals(Void.TYPE)) {
 									CandiGName.add(M.getName());
+								}
 						}
 						CLog.Fine("Loaded %d getter names", CandiGName.size());
 					} catch (ClassNotFoundException e) {
@@ -304,7 +315,9 @@ public class JOTAssist {
 					}
 				});
 				if (NewComplete.size() == 1) {
-					if (NewComplete.get(0).equals(PartBuf)) NewComplete.clear();
+					if (NewComplete.get(0).equals(PartBuf)) {
+						NewComplete.clear();
+					}
 				}
 				candidates.addAll(NewComplete);
 				return -1;
@@ -361,25 +374,33 @@ public class JOTAssist {
 	
 	ScopeDesc GetScopeDesc(String Scope) throws SecurityException, ClassNotFoundException {
 		ScopeDesc Desc = new ScopeDesc();
-		while (Scope != null && !Scope.isEmpty()) {
+		while ((Scope != null) && !Scope.isEmpty()) {
 			switch (Scope.charAt(0)) {
 				case ObjectTrap.SYM_ASTYPE: {
-					if (Desc.C != null || Desc.F != null || Desc.G != null || Desc.T != null)
+					if ((Desc.C != null) || (Desc.F != null) || (Desc.G != null) || (Desc.T != null)) {
 						Misc.ERROR("Excessive scope");
+					}
 					
-					if (Scope.length() != 2) Misc.ERROR("Invalid type case scope");
+					if (Scope.length() != 2) {
+						Misc.ERROR("Invalid type case scope");
+					}
 					ObjectTrap.TypeCastScope TS = JOT.new TypeCastScope(Scope.charAt(1));
 					Desc.T = TS.T;
 					Scope = null;
 					break;
 				}
 				case ObjectTrap.SYM_ASCLASS: {
-					if (Desc.C != null || Desc.F != null || Desc.G != null || Desc.T != null)
+					if ((Desc.C != null) || (Desc.F != null) || (Desc.G != null) || (Desc.T != null)) {
 						Misc.ERROR("Excessive scope");
+					}
 					
 					int PartIdx = Scope.indexOf(ObjectTrap.SYM_FIELD);
-					if (PartIdx < 0) PartIdx = Scope.indexOf(ObjectTrap.SYM_GETTER);
-					if (PartIdx < 0) Misc.ERROR("Incomplete scope");
+					if (PartIdx < 0) {
+						PartIdx = Scope.indexOf(ObjectTrap.SYM_GETTER);
+					}
+					if (PartIdx < 0) {
+						Misc.ERROR("Incomplete scope");
+					}
 					
 					String PartCName = Scope.substring(1, PartIdx);
 					Desc.C = TapPackage.Get(PartCName);
@@ -388,7 +409,9 @@ public class JOTAssist {
 					break;
 				}
 				case ObjectTrap.SYM_FIELD: {
-					if (Desc.F != null || Desc.G != null || Desc.T != null) Misc.ERROR("Excessive scope");
+					if ((Desc.F != null) || (Desc.G != null) || (Desc.T != null)) {
+						Misc.ERROR("Excessive scope");
+					}
 					
 					ObjectTrap.FieldScope FS = JOT.new FieldScope(
 							Desc.C != null? Desc.C.toClass() : CurClass.toClass(), null, Scope.substring(1));
@@ -397,7 +420,9 @@ public class JOTAssist {
 					break;
 				}
 				case ObjectTrap.SYM_GETTER: {
-					if (Desc.F != null || Desc.G != null || Desc.T != null) Misc.ERROR("Excessive scope");
+					if ((Desc.F != null) || (Desc.G != null) || (Desc.T != null)) {
+						Misc.ERROR("Excessive scope");
+					}
 					
 					ObjectTrap.GetterScope GS = JOT.new GetterScope(
 							Desc.C != null? Desc.C.toClass() : CurClass.toClass(), null, Scope.substring(1));
@@ -415,11 +440,15 @@ public class JOTAssist {
 	@SuppressWarnings("unchecked")
 	public static void main(String args[]) {
 		try {
-			if (args.length < 1) Misc.ERROR("Please specify pathname to target Jar!");
+			if (args.length < 1) {
+				Misc.ERROR("Please specify pathname to target Jar!");
+			}
 			String jarpath = args[0];
 			String cname = args.length < 2? null : args[1];
 			String pkgname = args.length < 3? null : args[2];
-			if (args.length > 3) CLog.Warn("Ignored %d excessive arguments", args.length - 3);
+			if (args.length > 3) {
+				CLog.Warn("Ignored %d excessive arguments", args.length - 3);
+			}
 			
 			JOTAssist Assist = new JOTAssist(jarpath, cname, pkgname);
 			List<ScopeDesc> ScopeCascade = new ArrayList<>();
@@ -440,8 +469,9 @@ public class JOTAssist {
 				if (PartBuf.charAt(0) != ObjectTrap.SYM_ASTYPE) return -1;
 				if (PartBuf.length() > 1) return -1;
 				
-				for (ObjectTrap.CastableTypes T : ObjectTrap.CastableTypes.values())
+				for (ObjectTrap.CastableTypes T : ObjectTrap.CastableTypes.values()) {
 					candidates.add(String.format("%c%c", ObjectTrap.SYM_ASTYPE, T.SYMBOL));
+				}
 				
 				return -1;
 			});
@@ -460,7 +490,9 @@ public class JOTAssist {
 					String OpBuf = buffer.substring(1);
 					Method HM = HC.getDeclaredMethod("InputHelp");
 					((Collection<String>) HM.invoke(null)).forEach(HH -> {
-						if (HH.startsWith(OpBuf)) candidates.add(ObjectTrap.SYM_SCOPEOP + HH);
+						if (HH.startsWith(OpBuf)) {
+							candidates.add(ObjectTrap.SYM_SCOPEOP + HH);
+						}
 					});
 				} catch (Exception e) {
 					return -1;
@@ -477,14 +509,15 @@ public class JOTAssist {
 			while ((LineIn = console.readLine()) != null) {
 				try {
 					if (LineIn.isEmpty()) {
-						if (ScopeCascade.size() > 0)
+						if (ScopeCascade.size() > 0) {
 							ScopeCascade.remove(ScopeCascade.size() - 1);
-						else
+						} else {
 							cout.println("* Already at root level!");
+						}
 					} else {
-						if (LineIn.charAt(0) != ObjectTrap.SYM_SCOPEOP)
+						if (LineIn.charAt(0) != ObjectTrap.SYM_SCOPEOP) {
 							ScopeCascade.add(Assist.GetScopeDesc(LineIn));
-						else {
+						} else {
 							IHook H = ObjectTrap.HookMaker.Create(Assist.CurClass.toClass(), LineIn.substring(1),
 									Assist.TapPackage);
 							cout.print("Hook operation: ");
@@ -496,18 +529,27 @@ public class JOTAssist {
 						ScopeDesc SD = ScopeCascade.get(ScopeCascade.size() - 1);
 						Class<?> CC = ((SD.T != null)? SD.T.CLASS : (SD.F != null)? SD.F
 								.getType() : (SD.G != null)? SD.G.getReturnType() : null);
-						if (CC == null) Misc.FAIL("Internal Error - Unable to derive current type");
+						if (CC == null) {
+							Misc.FAIL("Internal Error - Unable to derive current type");
+						}
 						
 						Assist.CurClass = Assist.TapPackage.Lookup(CC.getName());
-						if (Assist.CurClass == null) Assist.CurClass = new DirectClassSolver(CC);
-					} else
+						if (Assist.CurClass == null) {
+							Assist.CurClass = new DirectClassSolver(CC);
+						}
+					} else {
 						Assist.CurClass = Assist.TapClass;
+					}
 					cout.println("Scope: " + GetScopeString(ScopeCascade) + " [" + Assist.CurClass + "] ");
 				} catch (Throwable e) {
 					String ErrMsg = String.format("* Unable to parse input - %s ", e);
-					if (e.getCause() != null) ErrMsg += " - " + e.getCause();
+					if (e.getCause() != null) {
+						ErrMsg += " - " + e.getCause();
+					}
 					cout.println(ErrMsg);
-					if (CLog.isLoggable(Level.FINE)) CLog.logExcept(e);
+					if (CLog.isLoggable(Level.FINE)) {
+						CLog.logExcept(e);
+					}
 					cout.println("Scope: " + GetScopeString(ScopeCascade) + " [" + Assist.CurClass + "] ");
 					console.putString(LineIn);
 				}
@@ -524,7 +566,9 @@ public class JOTAssist {
 		StringBuilder StrBuf = new StringBuilder();
 		
 		scopes.forEach(desc -> {
-			if (StrBuf.length() != 0) StrBuf.append(ObjectTrap.SYM_SCOPES);
+			if (StrBuf.length() != 0) {
+				StrBuf.append(ObjectTrap.SYM_SCOPES);
+			}
 			if (desc.T != null) {
 				StrBuf.append(ObjectTrap.SYM_ASTYPE);
 				StrBuf.append(desc.T.SYMBOL);
