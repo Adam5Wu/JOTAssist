@@ -28,7 +28,6 @@ import com.necla.am.zwutils.Reflection.IClassSolver.Impl.DirectClassSolver;
 import com.necla.am.zwutils.Reflection.PackageClassIterable;
 import com.necla.am.zwutils.Reflection.SuffixClassDictionary;
 import com.necla.am.zwutils.Reflection.SuffixClassDictionary.DirectSuffixClassSolver;
-import com.necla.am.zwutils.Reflection.SuffixClassDictionary.ISuffixClassSolver;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -58,25 +57,20 @@ public class JOTAssist {
 		ClassLoader Loader = new URLClassLoader(Misc.wrap(FileURL));
 		
 		SuffixClassDictionary ClassDict = new SuffixClassDictionary(jarpath, Loader);
-		for (ISuffixClassSolver csolver : DirectSuffixClassSolver.BaseClasses) {
-			ClassDict.Add(csolver);
-		}
+		DirectSuffixClassSolver.EnumBaseClassSolvers(ClassDict::Add);
 		new PackageClassIterable(JarURL, "", null).forEach(ClassDict::Add);
 		CLog.Info("Loaded %d classes from Jar", ClassDict.size());
 		
 		if (cname != null) {
 			TapClass = ClassDict.Get(cname);
 			if (pkgname == null) {
-				pkgname = TapClass.toClass().getPackage().getName();
-				for (ISuffixClassSolver csolver : DirectSuffixClassSolver.BaseClasses)
-					if (TapClass.equals(csolver)) {
-						pkgname = null;
-						break;
-					}
+				if (DirectSuffixClassSolver.FilterBaseClassSolvers(C -> !TapClass.equals(C))) {
+					pkgname = TapClass.toClass().getPackage().getName();
+				}
 			}
 			CLog.Info("Located base class '%s' (%s)", TapClass.toString(), TapClass.FullName());
 		} else {
-			TapClass = DirectSuffixClassSolver.BaseClasses[0];
+			TapClass = DirectSuffixClassSolver.OBJECT;
 		}
 		
 		if (pkgname != null) {
